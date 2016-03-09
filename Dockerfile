@@ -1,16 +1,17 @@
 FROM ubuntu
-RUN apt-get update && apt-get -y install curl sudo procps wget && \
-    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    useradd -u 1000 -G users,sudo -d /home/user --shell /bin/bash -m user && \
-    echo "secret\nsecret" | passwd user && \
+RUN apt-get update && apt-get -y install curl sudo procps wget
+RUN echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    groupadd -g 6139 dbtrento && \
+    useradd -u 1000 -G users,dbtrento,sudo -d /home/eclipse --shell /bin/bash -m eclipse && \
+    echo "secret\nsecret" | passwd eclipse && \
     curl -sSL https://get.docker.com/ | sh && \
-    usermod -aG docker user && sudo apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    usermod -aG docker eclipse && sudo apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
     
-USER user
+USER eclipse
 ENV JAVA_VERSION=8u65 \
     JAVA_VERSION_PREFIX=1.8.0_65 \
-    CHE_LOCAL_CONF_DIR=/home/user/.che
-RUN mkdir /home/user/.che && \
+    CHE_LOCAL_CONF_DIR=/home/eclipse/.che
+RUN mkdir /home/eclipse/.che && \
     wget \
    --no-cookies \
    --no-check-certificate \
@@ -22,10 +23,10 @@ ENV PATH $JAVA_HOME/bin:$PATH
 
 EXPOSE 8080
 
-ADD /assembly/assembly-main/target/eclipse-che-*/eclipse-che-* /home/user/che
+ADD /assembly/assembly-main/target/eclipse-che-*/eclipse-che-* /home/eclipse/che
 
-CMD sudo chown -R user:user /home/user && \
-    rm -rf /home/user/che/lib-copy/* && \
-    mkdir -p /home/user/che/lib-copy/ && \
-    cp -rf /home/user/che/lib/* /home/user/che/lib-copy && \
-    /home/user/che/bin/che.sh run
+CMD sudo chown -R eclipse:dbtrento /home/eclipse && \
+    rm -rf /home/eclipse/che/lib-copy/* && \
+    mkdir -p /home/eclipse/che/lib-copy/ && \
+    cp -rf /home/eclipse/che/lib/* /home/eclipse/che/lib-copy && \
+    /home/eclipse/che/bin/che.sh run
